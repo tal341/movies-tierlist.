@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Movie Tier List</title>
+  <style>
+    body {
+      margin: 0;
+      background: #111;
+      color: white;
+      font-family: sans-serif;
+    }
+    header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 10px;
+      background: #000;
+    }
+    .tier-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 10px;
+    }
+    .tier {
+      min-height: 100px;
+      border: 2px solid #333;
+      border-radius: 8px;
+      padding: 10px;
+      background: linear-gradient(to right, #222, #111);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .tier-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .tier-label {
+      font-weight: bold;
+      color: #fff;
+      min-width: 60px;
+      text-align: right;
+      margin-right: 15px;
+    }
+
+    .tier-content {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    /* צבעי Tier לפי הבקשה */
+    .tier.SSS { background: linear-gradient(to right, #5a0000, #220000); }
+    .tier.SS  { background: linear-gradient(to right, #5a3b00, #221800); }
+    .tier.S   { background: linear-gradient(to right, #5a4f00, #221f00); }
+    .tier.Ap  { background: linear-gradient(to right, #004f3b, #001f18); }
+    .tier.B   { background: linear-gradient(to right, #003b5a, #001822); }
+    .tier.C   { background: linear-gradient(to right, #3b005a, #180022); }
+
+    .poster {
+      width: 120px;
+      height: auto;
+      cursor: grab;
+    }
+
+    #unranked-area {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 20px 10px;
+      gap: 10px;
+      border-top: 2px solid #333;
+      background: #222;
+    }
+
+    /* ✅ כפתור פשוט, קטן, כמו שהיה מקודם */
+    input[type="file"] {
+      display: block;
+      margin: 20px auto;
+      padding: 8px 16px;
+      background: #333;
+      color: white;
+      border: 1px solid #555;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    input[type="file"]:hover {
+      background: #444;
+    }
+
+    /* ✅ החזרתי את הכותרת "🎬 Movies" */
+    #unranked-label {
+      text-align: center;
+      font-size: 18px;
+      font-weight: bold;
+      margin: 10px 0 5px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.8rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🎬 Movie Tier List</h1>
+  </header>
+
+  <div class="tier-list">
+    <div class="tier SSS" data-tier="SSS">
+      <div class="tier-header">
+        <div class="tier-label">SSS</div>
+      </div>
+      <div class="tier-content"></div>
+    </div>
+
+    <div class="tier SS" data-tier="SS">
+      <div class="tier-header">
+        <div class="tier-label">SS</div>
+      </div>
+      <div class="tier-content"></div>
+    </div>
+
+    <div class="tier S" data-tier="S">
+      <div class="tier-header">
+        <div class="tier-label">S</div>
+      </div>
+      <div class="tier-content"></div>
+    </div>
+
+    <div class="tier Ap" data-tier="A+">
+      <div class="tier-header">
+        <div class="tier-label">A+</div>
+      </div>
+      <div class="tier-content"></div>
+    </div>
+
+    <div class="tier B" data-tier="B">
+      <div class="tier-header">
+        <div class="tier-label">B</div>
+      </div>
+      <div class="tier-content"></div>
+    </div>
+
+    <div class="tier C" data-tier="C">
+      <div class="tier-header">
+        <div class="tier-label">C</div>
+      </div>
+      <div class="tier-content"></div>
+    </div>
+  </div>
+
+  <!-- ✅ החזרתי את הכותרת הזו -->
+  <div id="unranked-label">🎬 Movies</div>
+  <div id="unranked-area"></div>
+
+  <!-- ✅ כפתור פשוט, תומך בתמונות בלבד -->
+  <input type="file" id="fileInput" multiple accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp">
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const unrankedArea = document.getElementById('unranked-area');
+
+    fileInput.addEventListener('change', (event) => {
+      const files = event.target.files;
+      for (const file of files) {
+        // ✅ מוודא שזה תמונה
+        if (!file.type.startsWith('image/')) continue;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = document.createElement('img');
+          img.src = e.target.result;
+          img.classList.add('poster');
+          img.draggable = true;
+          img.addEventListener('dragstart', dragStart);
+          unrankedArea.appendChild(img);
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+
+    function dragStart(e) {
+      e.dataTransfer.setData('text/plain', e.target.src);
+    }
+
+    const tierContents = document.querySelectorAll('.tier-content');
+    tierContents.forEach(content => {
+      content.addEventListener('dragover', (e) => e.preventDefault());
+      content.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const src = e.dataTransfer.getData('text/plain');
+        const img = document.querySelector(`img[src='${src}']`);
+        if (img) content.appendChild(img);
+      });
+    });
+
+    unrankedArea.addEventListener('dragover', (e) => e.preventDefault());
+    unrankedArea.addEventListener('drop', (e) => {
+      e.preventDefault();
+      const src = e.dataTransfer.getData('text/plain');
+      const img = document.querySelector(`img[src='${src}']`);
+      if (img) unrankedArea.appendChild(img);
+    });
+  </script>
+</body>
+</html>
